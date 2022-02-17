@@ -15,7 +15,7 @@ async function run () {
   const dt = new Date()
   for (let i = 0; i < iterator.length; i++) {
     const airports = await db('airports')
-      .leftJoin('contracts', function(dt = new Date()) {
+      .leftJoin('contracts', function() {
         this.on('airports.identifier', '=', 'contracts.dep_airport_id')
         this.andOn('contracts.expires_at', '>', dt)
       })
