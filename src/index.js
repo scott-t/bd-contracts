@@ -12,11 +12,12 @@ async function run () {
   const iterator = [...alphabet, ...nums]
 
   // batch contracts to airport
+  const dt = new Date()
   for (let i = 0; i < iterator.length; i++) {
     const airports = await db('airports')
-      .leftJoin('contracts', function() {
+      .leftJoin('contracts', function(dt = new Date()) {
         this.on('airports.identifier', '=', 'contracts.dep_airport_id')
-        this.andOn('contracts.expires_at', '>', new Date())
+        this.andOn('contracts.expires_at', '>', dt)
       })
       .select('airports.identifier', 'airports.size', 'airports.lon', 'airports.lat', db.raw('COUNT(contracts.id) as contracts'))
       .whereLike('airports.identifier', `${iterator[i]}%`)
