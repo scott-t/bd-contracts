@@ -14,14 +14,8 @@ async function run () {
   // batch contracts to airport
   for (let i = 0; i < iterator.length; i++) {
     const airports = await db('airports')
-      .leftJoin('contracts', function() {
-        const dt = new Date()
-        this.on('airports.identifier', '=', 'contracts.dep_airport_id')
-        this.andOn('contracts.expires_at', '>', dt)
-      })
-      .select('airports.identifier', 'airports.size', 'airports.lon', 'airports.lat', db.raw('COUNT(contracts.id) as contracts'))
+      .select('airports.identifier', 'airports.size', 'airports.lon', 'airports.lat')
       .whereLike('airports.identifier', `${iterator[i]}%`)
-      .groupBy('airports.identifier', 'airports.size', 'airports.lon', 'airports.lat')
 
     const contracts = await getAirportsForContractGeneration(airports)
     await db.batchInsert('contracts', contracts)
