@@ -12,17 +12,17 @@ async function run () {
   const iterator = [...alphabet, ...nums]
 
   // batch contracts to airport
-  // for (let i = 0; i < iterator.length; i++) {
-  //   const airports = await db('airports')
-  //     .leftJoin('contracts', 'airports.identifier', '=', 'contracts.dep_airport_id')
-  //     .select('airports.*', db.raw('COUNT(contracts.id) as contracts'))
-  //     .whereLike('airports.identifier', `${iterator[i]}%`)
-  //     .where('contracts.expires_at', '>', new Date())
-  //     .groupBy('airports.identifier')
-  //
-  //   const contracts = await getAirportsForContractGeneration(airports)
-  //   await db.batchInsert('contracts', contracts)
-  // }
+  for (let i = 0; i < iterator.length; i++) {
+    const airports = await db('airports')
+      .leftJoin('contracts', 'airports.identifier', '=', 'contracts.dep_airport_id')
+      .select('airports.*', db.raw('COUNT(contracts.id) as contracts'))
+      .whereLike('airports.identifier', `${iterator[i]}%`)
+      .where('contracts.expires_at', '>', new Date())
+      .groupBy('airports.identifier')
+
+    const contracts = await getAirportsForContractGeneration(airports)
+    await db.batchInsert('contracts', contracts)
+  }
   //
   // find contracts without cargo
   const exContracts = await db('contracts')
