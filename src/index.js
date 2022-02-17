@@ -12,10 +12,10 @@ async function run () {
   const iterator = [...alphabet, ...nums]
 
   // batch contracts to airport
-  const dt = new Date()
   for (let i = 0; i < iterator.length; i++) {
     const airports = await db('airports')
       .leftJoin('contracts', function() {
+        const dt = new Date()
         this.on('airports.identifier', '=', 'contracts.dep_airport_id')
         this.andOn('contracts.expires_at', '>', dt)
       })
