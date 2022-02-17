@@ -25,7 +25,9 @@ async function run () {
             group by airports.identifier, airports.size, lon, lat`
     )
 
-    const contracts = await getAirportsForContractGeneration(airports)
+    console.log(airports[0].length)
+
+    const contracts = await getAirportsForContractGeneration(airports[0])
     await db.batchInsert('contracts', contracts)
   }
   //
