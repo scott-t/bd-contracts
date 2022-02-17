@@ -11,10 +11,10 @@ export const getAirportsForContractGeneration = async (airports) => {
   // loop through each airport and process
   for (let i = 0; i < airports.length; i++) {
     //get the current number of contracts
-    const currentJobs = await db.table("contracts")
-      .where('dep_airport_id', airports[i].identifier)
-      .where('is_available', true)
-      .where('expires_at', '>', new Date())
+    // const currentJobs = await db.table("contracts")
+    //   .where('dep_airport_id', airports[i].identifier)
+    //   .where('is_available', true)
+    //   .where('expires_at', '>', new Date())
 
 
     // determine the max number of jobs based on airport size
@@ -33,8 +33,8 @@ export const getAirportsForContractGeneration = async (airports) => {
         maxJobs = 25
         break
     }
-    if (currentJobs.length < maxJobs) {
-      const numberToGen = maxJobs - currentJobs.length
+    if (airports[i].contracts < maxJobs) {
+      const numberToGen = maxJobs - airports[i].contracts
       const shortQty = (numberToGen / 100) * PERC_SHORT
       const medQty = (numberToGen / 100) * PERC_MEDIUM
       const longQty = (numberToGen / 100) * PERC_LONG
