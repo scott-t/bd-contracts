@@ -5,17 +5,12 @@ import { PERC_LONG, PERC_MEDIUM, PERC_SHORT } from '../constants.js'
 import { createPolygon } from './geo.service.js'
 import { getRandom } from './helper.service.js'
 
-export const getAirportsForContractGeneration = async (airports) => {
+export const getAirportsForContractGeneration = async (airports, allAirports) => {
 
   let contracts = []
   // loop through each airport and process
   for (let i = 0; i < airports.length; i++) {
     //get the current number of contracts
-    // const currentJobs = await db.table("contracts")
-    //   .where('dep_airport_id', airports[i].identifier)
-    //   .where('is_available', true)
-    //   .where('expires_at', '>', new Date())
-
 
     // determine the max number of jobs based on airport size
     let maxJobs = 0
@@ -33,8 +28,8 @@ export const getAirportsForContractGeneration = async (airports) => {
         maxJobs = 25
         break
     }
-    if (airports[i].contracts < maxJobs) {
-      const numberToGen = maxJobs - airports[i].contracts
+    if (airports[i].contractCount < maxJobs) {
+      const numberToGen = maxJobs - airports[i].contractCount
       const shortQty = (numberToGen / 100) * PERC_SHORT
       const medQty = (numberToGen / 100) * PERC_MEDIUM
       const longQty = (numberToGen / 100) * PERC_LONG
@@ -49,7 +44,7 @@ export const getAirportsForContractGeneration = async (airports) => {
       const polyMed = circle(centre, 150, { steps: 16, units: 'nauticalmiles' })
       const polyLong = circle(centre, 250, { steps: 16, units: 'nauticalmiles' })
 
-      const selectedAirports = await getAirportsForEachRange(airports, airports[i], polyShort, polyMed, polyLong)
+      const selectedAirports = await getAirportsForEachRange(allAirports, airports[i], polyShort, polyMed, polyLong)
 
       let shortContracts = []
       let medContracts = []
