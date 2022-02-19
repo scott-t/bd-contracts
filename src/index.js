@@ -1,6 +1,5 @@
 import { getAirportsForContractGeneration } from './services/airport.service.js'
 import { db } from './db.js'
-import { generateCargo } from './services/contract.service.js'
 async function run () {
 
   // specify alphabet and nums array to split the generation
@@ -20,10 +19,10 @@ async function run () {
     const airports = await db.raw(
       `select airports.identifier, airports.size, airports.lon, airports.lat, COUNT(contracts.id) as contractCount
             from airports
-            left join contracts on airports.identifier = contracts.dep_airport_id  AND contracts.is_available = 0
+            left join contracts on airports.identifier = contracts.dep_airport_id  AND contracts.is_available = 1
             where airports.identifier like '${iterator[i]}%'
             group by airports.identifier, airports.size, lon, lat
-            having contractCount <= 10`
+            having contractCount <= 8`
     )
 
     console.log(airports[0].length)
@@ -31,27 +30,30 @@ async function run () {
     const contracts = await getAirportsForContractGeneration(airports[0], allAirports)
     await db.batchInsert('contracts', contracts)
   }
-  //
-  // find contracts without cargo TODO: update this to use the alphabet iteration too
-  for (let i = 0; i < iterator.length; i++) {
-    const exContracts = await db('contracts')
-      .leftJoin('contract_cargos', 'contracts.id', '=', 'contract_cargos.contract_id')
-      .select('contracts.*', db.raw('COUNT(contract_cargos.id) as cargo'))
-      .whereLike('contracts.dep_airport_id', `${iterator[i]}%`)
-      .groupBy('contracts.id')
-      .havingRaw('COUNT(contract_cargos.id) = ?', [0])
 
-    console.log(exContracts.length)
+  const exContracts = await db.raw(
+    `SELECT  contracts.id, contracts.dep_airport_id, contracts.arr_airport_id, contracts.distance from contracts
+            left join contract_cargos cc on contracts.id = cc.contract_id
+            WHERE contracts.is_available = 1 AND contracts.is_completed = 0
+            GROUP BY contracts.id
+            HAVING COUNT(cc.id) = 0`
+    )
+  let countOfContracts = exContracts[0].length
+  do {
+    await db.raw(`CALL create_cargo()`)
 
-    let cargo = []
-    for (let i = 0; i < exContracts.length; i++) {
-      // create cargo for each
-      const cc = await generateCargo(exContracts[i])
-      cargo.push(cc)
-    }
-    // insert into db
-    await db.batchInsert('contract_cargos', cargo)
+    const exContracts = await db.raw(
+      `SELECT  contracts.id, contracts.dep_airport_id, contracts.arr_airport_id, contracts.distance from contracts
+            left join contract_cargos cc on contracts.id = cc.contract_id
+            WHERE contracts.is_available = 1 AND contracts.is_completed = 0
+            GROUP BY contracts.id
+            HAVING COUNT(cc.id) = 0`
+    )
+    countOfContracts = exContracts[0].length
   }
+  while (countOfContracts > 0)
+
+  exContracts[0].length
 
 
   process.exit()
