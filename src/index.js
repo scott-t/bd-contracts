@@ -22,7 +22,7 @@ async function run () {
             left join contracts on airports.identifier = contracts.dep_airport_id  AND contracts.is_available = 1
             where airports.identifier like '${iterator[i]}%'
             group by airports.identifier, airports.size, lon, lat
-            having contractCount <= 8`
+            having contractCount < 8`
     )
 
     console.log(airports[0].length)
