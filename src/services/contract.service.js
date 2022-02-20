@@ -22,6 +22,7 @@ export async function generateContractDetails(origin, airports) {
         distance,
         heading,
         expires_at: expiry,
+        contract_value: 0.00,
         created_at: new Date(),
         updated_at: new Date()
       })
